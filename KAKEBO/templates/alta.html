@@ -5,9 +5,42 @@
 {% block contenido %}
 <h1>Nuevo movimiento  </h1>
 <form action="nuevo" method="post">
-    {{ form.fecha()}}
-    {{ form.concepto()}}
-    {{ form.categoria()}}
+    <fieldset class="container">
+        <div class="row">
+            <div class="col-sm-3">
+                {{form.fecha.label}}
+            </div>
+            <div class="col-sm-9">
+                {{ form.fecha(type= "date", placeholder=form.fecha.name)}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3">
+                {{form.concepto.label}}
+            </div>
+            <div class="col-sm-9">
+                {{ form.concepto(placeholder=form.concepto.name)}}
+            </div>
+        </div><div class="row">
+            <div class="col-sm-3">
+                {{form.categoria.label}}
+            </div>
+            <div class="col-sm-9">
+                {{ form.categoria()}}
+            </div>
+        </div> 
+    </fieldset>
     {{ form.submit()}}
 </form>
 {% endblock %}
+
+
+<form>
+    <fieldset>
+      <legend>Simple form</legend>
+      <label for="username">Username</label>
+      <input type="text" id="Username" placeholder="Username"/>
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Password"/>
+    </fieldset>
+  </form>

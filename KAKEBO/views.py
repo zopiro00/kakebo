@@ -1,6 +1,6 @@
 from KAKEBO import app
 import sqlite3
-from flask import jsonify, render_template
+from flask import jsonify, render_template, request
 from KAKEBO.forms import MovimientosForm
 
 @app.route('/')
