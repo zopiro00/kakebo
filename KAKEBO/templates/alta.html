@@ -5,42 +5,53 @@
 {% block contenido %}
 <h1>Nuevo movimiento  </h1>
 <form action="nuevo" method="post">
+    <!--Esta etiqueta es para errores de formulario que no son directamente del formulario.
+    En este caso su contenido es el token.-->
+    {{ form.hidden_tag() }}
     <fieldset class="container">
-        <div class="row">
-            <div class="col-sm-3">
-                {{form.fecha.label}}
-            </div>
-            <div class="col-sm-9">
-                {{ form.fecha(type= "date", placeholder=form.fecha.name)}}
-            </div>
+        <div>
+            {{ form.fecha.label(class="mylabel") }}
+            {{ form.fecha(type="date") }}
+            <!--Este for imprime los mensaje de error si no se rellena bien el formulario. -->
+            {% for error in form.fecha.errors %}
+                <p class="msg-err">
+                    {{ error }}
+                </p>
+            {% endfor %}
         </div>
-        <div class="row">
-            <div class="col-sm-3">
-                {{form.concepto.label}}
-            </div>
-            <div class="col-sm-9">
-                {{ form.concepto(placeholder=form.concepto.name)}}
-            </div>
-        </div><div class="row">
-            <div class="col-sm-3">
-                {{form.categoria.label}}
-            </div>
-            <div class="col-sm-9">
-                {{ form.categoria()}}
-            </div>
-        </div> 
+        <div >
+            {{ form.concepto.label(class="mylabel") }}
+            {{ form.concepto() }}
+            {% for error in form.concepto.errors %}
+                <p class="msg-err">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+        <div >
+            {{ form.categoria.label(class="mylabel") }}
+            {{ form.categoria() }}
+            {% for error in form.categoria.errors %}
+                <p class="msg-err">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+        <div >
+            {{ form.cantidad.label(class="mylabel") }}
+            {{ form.cantidad() }}
+            {% for error in form.cantidad.errors %}
+                <p class="msg-err">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+        <div >
+            {{ form.esGasto.label(class="mylabel") }}
+            {{ form.esGasto() }}
+        </div>
     </fieldset>
     {{ form.submit()}}
 </form>
+
 {% endblock %}
-
-
-<form>
-    <fieldset>
-      <legend>Simple form</legend>
-      <label for="username">Username</label>
-      <input type="text" id="Username" placeholder="Username"/>
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Password"/>
-    </fieldset>
-  </form>

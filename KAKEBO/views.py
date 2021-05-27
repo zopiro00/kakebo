@@ -1,6 +1,8 @@
+from flask.helpers import url_for
 from KAKEBO import app
 import sqlite3
-from flask import jsonify, render_template, request
+from flask import jsonify, render_template, request, redirect, url_for
+
 from KAKEBO.forms import MovimientosForm
 
 @app.route('/')
@@ -35,5 +37,32 @@ def index():
 @app.route('/nuevo', methods=['GET', 'POST'])
 def nuevo():
     form = MovimientosForm()
-    return render_template('alta.html', form = form)
 
+    if request.method == "GET":
+        return render_template('alta.html', form = form)
+
+    else: # if POST
+        if form.validate():
+            conexion = sqlite3.connect("movimientos.db")
+            cur = conexion.cursor()
+
+            query=  """
+                    INSERT INTO movimientos (fecha,concepto,categoria, esGasto, cantidad) VALUES(?,?,?,?,?)
+                    """
+            #Las interrogaciones se utilizan en SQL como huecos que rellenar.
+            try:
+                cur.execute(query, [form.fecha.data,
+                                    form.concepto.data,
+                                    form.categoria.data,
+                                    form.esGasto.data,
+                                    form.cantidad.data])
+            except sqlite3.Error as el_error:
+                print(el_error)
+                return render_template("alta.html", form = form)
+            conexion.commit()
+            conexion.close
+            #Volver a la página principal
+            #return redirect("/")
+            return redirect(url_for("index"))
+        else:
+            return render_template('alta.html', form = form)

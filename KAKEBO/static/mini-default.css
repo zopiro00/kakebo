@@ -827,7 +827,7 @@ label {
   -webkit-appearance: none;
 }
 
-input:not([type]), [type="text"], [type="email"], [type="number"], [type="search"],
+input:not([type]), [type="text"], [type="date"],  [type="email"], [type="number"], [type="search"],
 [type="password"], [type="url"], [type="tel"], [type="checkbox"], [type="radio"], textarea, select {
   box-sizing: border-box;
   background: var(--input-back-color);
@@ -2168,3 +2168,5 @@ span.icon-user {
     overflow: hidden !important;
   }
 }
+
+
