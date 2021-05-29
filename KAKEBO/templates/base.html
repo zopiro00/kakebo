@@ -5,15 +5,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kakebo | {% block titulo %}{% endblock %}</title>
-    <link rel="stylesheet" type="text/css" href="static/mini-default.css">
-    <link rel="stylesheet" href="static/styles.css">
-
-    <!-- href = {{url_for("static", filename= "mini-default.css")}} para no tener problemas con los archivos staticos en flask-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename= 'mini-default.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename= 'styles.css')}}">
 </head>
 <body>
     <header>
         Kakebo Web - BZ VII
     </header>
+    <!--Este código es para mostrar mensajes relacionados con el servidor
+    en la pantalla del navegador.-->
+    {% with mensajes = get_flashed_messages(with_categories = true) %}
+        {% if mensajes %}
+            {% for tipo, mensaje in mensajes %}
+            <div class="{{ tipo }}">   
+                <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;
+                    {{ mensaje }}
+                </span>
+            </div>
+            {%  endfor %}
+        {% endif %}
+    {% endwith %}
     <section class="container">
         {% block contenido %}{% endblock %}
     </section>

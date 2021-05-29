@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block titulo %}borrar{% endblock %}
+{% block contenido %}
+<h1>Borrar Movimiento</h1>
+<div class="card">
+        <div>
+            {{ form.fecha.label(class="mylabel") }}
+            {{ form.fecha(type="date", disabled=True) }}
+        </div>
+        <div >
+            {{ form.concepto.label(class="mylabel") }}
+            {{ form.concepto( disabled=True) }}
+        </div>
+        <div >
+            {{ form.categoria.label(class="mylabel") }}
+            {{ form.categoria( disabled=True) }}
+        </div>
+        <div >
+            {{ form.cantidad.label(class="mylabel") }}
+            {{ form.cantidad( disabled=True) }}
+        </div>
+        <div >
+            {{ form.esGasto.label(class="mylabel") }}
+            {{ form.esGasto( disabled=True) }}
+        </div>
+        <form action="/borrar/{{id}}" method="POST">
+            {{ form.submit()}}
+        </form>
+        <form action="/">
+            {{ form.Nosubmit()}}
+        </form>
+</div>
+{% endblock %}

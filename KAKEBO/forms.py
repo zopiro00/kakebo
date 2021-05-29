@@ -22,3 +22,4 @@ class MovimientosForm(FlaskForm):
     cantidad = FloatField("Cantidad", validators = [DataRequired()])
     esGasto = BooleanField("Es gasto")
     submit = SubmitField("Aceptar")
+    Nosubmit = SubmitField("Anular")
