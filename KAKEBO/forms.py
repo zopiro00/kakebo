@@ -25,7 +25,8 @@ class MovimientosForm(FlaskForm):
     Nosubmit = SubmitField("Anular")
 
 class Filtrar(FlaskForm):
-    desde = DateField("Fecha", validators=[ fecha_en_pasado])
-    hasta = DateField("Fecha", validators=[ fecha_en_pasado])
-    texto = StringField("Concepto")
+    desde = DateField("Desde", validators=[ fecha_en_pasado])
+    hasta = DateField("Hasta", validators=[ fecha_en_pasado])
+    texto = StringField("Contenido")
     submit = SubmitField("Aceptar")
+    reset = SubmitField("Reset")

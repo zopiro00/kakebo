@@ -3,7 +3,7 @@ from KAKEBO import app
 import sqlite3
 from flask import jsonify, render_template, request, redirect, url_for, flash
 from datetime import date
-from KAKEBO.forms import MovimientosForm
+from KAKEBO.forms import Filtrar, MovimientosForm
 
 def consultaSQL(query, parametros=[]):
     #Abrimos conexion
@@ -38,19 +38,55 @@ def modificaSQL(query, parametros=[]):
     conexion.commit()
     conexion.close
 
-@app.route('/')
-def index():
-    movimientos = consultaSQL("SELECT * FROM movimientos;")
+def calcularSaldo(movimientos):
     saldo = 0
-
     for d in movimientos:
         if d['esGasto'] == 0:
             saldo = saldo + float(d['cantidad'])
         else:
             saldo = saldo - float(d['cantidad'])
         d['saldo'] = saldo
+    return movimientos
 
-    return render_template("movimientos.html", datos = movimientos )
+@app.route('/')
+def index():
+    filtrar = Filtrar()
+    movimientos = consultaSQL("SELECT * FROM movimientos;")
+    
+    movimientoConSaldo = calcularSaldo(movimientos)
+
+    return render_template("movimientos.html", datos = movimientoConSaldo, filtrar = filtrar)
+
+
+#@app.route('/<desde>/<hasta>', defaults={"texto":None}, methods=['GET', 'POST'])
+#@app.route('/<desde>/<hasta>/<texto>', methods=['GET', 'POST'])
+@app.route('/filtrar/<int:desde>', methods=['GET', 'POST'])
+def filtro(desde):
+    filtrar = Filtrar()
+    if filtrar.reset.data == True:
+        return redirect(url_for('index'))
+    if filtrar.submit.data == True:
+        if desde:
+            query = """
+                    SELECT * FROM movimientos WHERE fecha=?
+                    """
+            movimientos = consultaSQL(query , [desde])
+    """
+    elif not texto:
+        query = ""
+                SELECT * FROM movimientos WHERE fecha > ? AND fecha < ?
+                ""
+        movimientos = consultaSQL(query , [desde,hasta])
+    else:
+        query = ""
+                SELECT * FROM movimientos WHERE fecha > ? AND fecha < ? AND concepto LIKE "%?%"
+                ""
+        movimientos = consultaSQL(query , [desde,hasta,texto])
+    """
+    movimientoConSaldo = calcularSaldo(movimientos)
+    
+    flash("Se ha filtrado por por los valores definidos", "mensaje")
+    return render_template("movimientos.html", datos = movimientoConSaldo , filtrar = filtrar)
 
 @app.route('/nuevo', methods=['GET', 'POST'])
 def nuevo():

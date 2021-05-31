@@ -12,6 +12,7 @@
             <th>Tipo</th>
             <th>Cantidad</th>
             <th>Saldo</th>
+            <th></th>
         </tr>
         {% for movimiento in datos %}
         <tr>
@@ -35,18 +36,39 @@
     </table>
     <div>
         <h3>Filtrar</h3>
-        <form action="movimientos/{{movimiento.fecha}}" method="POST">
+        <form action="/filtrar/{{filtrar.desde.data}}" method="POST">
             <div>
-                {{ form.fecha.label(class="mylabel") }}
-                {{ form.fecha(type="date") }}
-                <!--Este for imprime los mensaje de error si no se rellena bien el formulario. -->
-                {% for error in form.fecha.errors %}
-                    <p class="msg-err">
-                        {{ error }}
-                    </p>
-                {% endfor %}
-            </div>
+                <fieldset>
+                    {{ filtrar.desde.label(class="mylabel") }}
+                    {{ filtrar.desde(type="date") }}
+                    <!--Este for imprime los mensaje de error si no se rellena bien el formulario. -->
+                    {% for error in filtrar.desde.errors %}
+                        <p class="msg-err">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
 
+                    {{ filtrar.hasta.label(class="mylabel") }}
+                    {{ filtrar.hasta(type="date") }}
+                    <!--Este for imprime los mensaje de error si no se rellena bien el formulario. -->
+                    {% for error in filtrar.hasta.errors %}
+                        <p class="msg-err">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
+
+                    {{ filtrar.texto.label(class="mylabel") }}
+                    {{ filtrar.texto() }}
+                    {% for error in filtrar.texto.errors %}
+                        <p class="msg-err">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
+                    
+                    {{ filtrar.submit()}}
+                    {{ filtrar.reset()}}
+                </fieldset>
+            </div>
         </form>
     </div>
 {% endblock %}
