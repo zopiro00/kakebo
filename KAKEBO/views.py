@@ -84,23 +84,66 @@ def nuevo():
 
 @app.route('/borrar/<int:id>', methods=['GET', 'POST'])
 def borrar(id):
+    formulario = MovimientosForm()
     if request.method == "GET":
         filas = consultaSQL("SELECT * FROM movimientos WHERE id= ?", [id])
         if len(filas) == 0:
             flash("No se encuentra el movimiento.", "alert")
             return render_template('borrar.html', form = None)
     else:
-        try:
-            modificaSQL("DELETE FROM movimientos WHERE id = ?;", [id])
-        except sqlite3.error as e:
-            flash("Se ha producido un error de base de datos, vuelva a intentarlo", 'error')
+        if formulario.submit.data:
+            try:
+                modificaSQL("DELETE FROM movimientos WHERE id = ?;", [id])
+            except sqlite3.error as e:
+                flash("Se ha producido un error de base de datos, vuelva a intentarlo", 'error')
+                return redirect(url_for('index'))
+                
+            flash("Borrado realizado con éxito", 'mensaje')    
             return redirect(url_for('index'))
-            
-        flash("Borrado realizado con éxito", 'aviso')    
-        return redirect(url_for('index'))
-
+        elif formulario.Nosubmit.data:
+            flash("Borrado Anulado", 'mensaje')    
+            return redirect(url_for('index'))
 
     registro = filas[0]
     registro["fecha"] = date.fromisoformat(registro["fecha"])
     formulario = MovimientosForm(data = registro)
     return render_template('borrar.html', form = formulario, id = id)
+
+@app.route('/modificar/<int:id>', methods=['GET', 'POST'])
+def modificar(id):
+
+    query = """
+            UPDATE movimientos SET fecha=?, concepto=?, categoria=?,esGasto=?, cantidad=? WHERE id=? 
+            """
+    form = MovimientosForm()
+    if request.method == "GET":
+        filas = consultaSQL("SELECT * FROM movimientos WHERE id= ?", [id])
+        if len(filas) == 0:
+            flash("No se encuentra el movimiento.", "alert")
+            return render_template('modificar.html', form = None)
+    else:
+        if form.submit.data:
+            try:
+                modificaSQL(query, [form.fecha.data,
+                                    form.concepto.data,
+                                    form.categoria.data,
+                                    form.esGasto.data,
+                                    form.cantidad.data,
+                                    id])
+            except sqlite3.error as e:
+                flash("Se ha producido un error de base de datos, vuelva a intentarlo", 'error')
+                return redirect(url_for('index'))
+                
+            flash("Modificación realizada con éxito", 'mensaje')    
+            return redirect(url_for('index'))
+        elif form.Nosubmit.data:
+            flash("Modificación Anulada", 'mensaje')    
+            return redirect(url_for('index'))
+
+    registro = filas[0]
+    registro["fecha"] = date.fromisoformat(registro["fecha"])
+    form = MovimientosForm(data = registro)
+    return render_template('modificar.html', form = form, id = id)
+
+
+    

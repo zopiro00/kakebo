@@ -23,3 +23,9 @@ class MovimientosForm(FlaskForm):
     esGasto = BooleanField("Es gasto")
     submit = SubmitField("Aceptar")
     Nosubmit = SubmitField("Anular")
+
+class Filtrar(FlaskForm):
+    desde = DateField("Fecha", validators=[ fecha_en_pasado])
+    hasta = DateField("Fecha", validators=[ fecha_en_pasado])
+    texto = StringField("Concepto")
+    submit = SubmitField("Aceptar")

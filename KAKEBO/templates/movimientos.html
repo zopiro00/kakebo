@@ -33,4 +33,20 @@
         </tr>
         {% endfor %}
     </table>
+    <div>
+        <h3>Filtrar</h3>
+        <form action="movimientos/{{movimiento.fecha}}" method="POST">
+            <div>
+                {{ form.fecha.label(class="mylabel") }}
+                {{ form.fecha(type="date") }}
+                <!--Este for imprime los mensaje de error si no se rellena bien el formulario. -->
+                {% for error in form.fecha.errors %}
+                    <p class="msg-err">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </div>
+
+        </form>
+    </div>
 {% endblock %}
