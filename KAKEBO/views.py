@@ -48,9 +48,9 @@ def calcularSaldo(movimientos):
         d['saldo'] = saldo
     return movimientos
 
-@app.route('/', defaults={"desde":None})
+@app.route('/')
 @app.route('/<desde>', methods=['GET', 'POST'])
-def index(desde):
+def index(desde = "None"):
     filtrar = Filtrar()
 
     if request.method == "GET":
@@ -70,36 +70,18 @@ def index(desde):
 
     return render_template("movimientos.html", datos = movimientoConSaldo, filtrar = filtrar)
 
-
-#@app.route('/<desde>/<hasta>', defaults={"texto":None}, methods=['GET', 'POST'])
-#@app.route('/<desde>/<hasta>/<texto>', methods=['GET', 'POST'])
-@app.route('/filtrar/<desde>', methods=['GET', 'POST'])
-def filtro(desde):
-    filtrar = Filtrar()
-    if filtrar.reset.data == True:
-        return redirect(url_for('index'))
-    if filtrar.submit.data == True:
-        if desde:
-            query = """
-                    SELECT * FROM movimientos WHERE fecha=?;
-                    """
-            movimientos = consultaSQL(query , [desde])
-    """
-    elif not texto:
-        query = ""
-                SELECT * FROM movimientos WHERE fecha > ? AND fecha < ?
-                ""
-        movimientos = consultaSQL(query , [desde,hasta])
-    else:
-        query = ""
-                SELECT * FROM movimientos WHERE fecha > ? AND fecha < ? AND concepto LIKE "%?%"
-                ""
-        movimientos = consultaSQL(query , [desde,hasta,texto])
-    """
-    movimientoConSaldo = calcularSaldo(movimientos)
-    
-    flash("Se ha filtrado por por los valores definidos", "mensaje")
-    return render_template("movimientos.html", datos = movimientoConSaldo , filtrar = filtrar)
+"""
+elif not texto:
+    query = ""
+            SELECT * FROM movimientos WHERE fecha > ? AND fecha < ?
+            ""
+    movimientos = consultaSQL(query , [desde,hasta])
+else:
+    query = ""
+            SELECT * FROM movimientos WHERE fecha > ? AND fecha < ? AND concepto LIKE "%?%"
+            ""
+    movimientos = consultaSQL(query , [desde,hasta,texto])
+"""
 
 @app.route('/nuevo', methods=['GET', 'POST'])
 def nuevo():
@@ -160,10 +142,6 @@ def borrar(id):
 
 @app.route('/modificar/<int:id>', methods=['GET', 'POST'])
 def modificar(id):
-
-    query = """
-            UPDATE movimientos SET fecha=?, concepto=?, categoria=?,esGasto=?, cantidad=? WHERE id=? 
-            """
     form = MovimientosForm()
     if request.method == "GET":
         filas = consultaSQL("SELECT * FROM movimientos WHERE id= ?", [id])
@@ -171,23 +149,34 @@ def modificar(id):
             flash("No se encuentra el movimiento.", "alert")
             return render_template('modificar.html', form = None)
     else:
+        #Si se pulsa el botón aceptar
         if form.submit.data:
-            try:
-                modificaSQL(query, [form.fecha.data,
-                                    form.concepto.data,
-                                    form.categoria.data,
-                                    form.esGasto.data,
-                                    form.cantidad.data,
-                                    id])
-            except sqlite3.error as e:
-                flash("Se ha producido un error de base de datos, vuelva a intentarlo", 'error')
+            #Si los archivos están validados.
+            if form.validate():
+                query = """
+                        UPDATE movimientos SET fecha=?, concepto=?, categoria=?,esGasto=?, cantidad=? WHERE id=? 
+                        """
+                try:
+                    modificaSQL(query, [form.fecha.data,
+                                        form.concepto.data,
+                                        form.categoria.data,
+                                        form.esGasto.data,
+                                        form.cantidad.data,
+                                        id])
+                except sqlite3.error as e:
+                    flash("Se ha producido un error de base de datos, vuelva a intentarlo", 'error')
+                    print("Error en update", e) # < Esta línea es para el operador, indica el error en consola para el programador.
+                    return redirect(url_for('index'))
+                    
+                flash("Modificación realizada con éxito", 'mensaje')    
                 return redirect(url_for('index'))
-                
-            flash("Modificación realizada con éxito", 'mensaje')    
-            return redirect(url_for('index'))
+            #Si los archivos NO están validados
+            else:
+                return render_template('modificar.html', form = form)
+        #Si se pulsa el boton cancelar
         elif form.Nosubmit.data:
             flash("Modificación Anulada", 'mensaje')    
-            return redirect(url_for('index'))
+            return render_template('modificar.html', form = form, id = id)
 
     registro = filas[0]
     registro["fecha"] = date.fromisoformat(registro["fecha"])
