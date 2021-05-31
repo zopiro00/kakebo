@@ -48,11 +48,24 @@ def calcularSaldo(movimientos):
         d['saldo'] = saldo
     return movimientos
 
-@app.route('/')
-def index():
+@app.route('/', defaults={"desde":None})
+@app.route('/<desde>', methods=['GET', 'POST'])
+def index(desde):
     filtrar = Filtrar()
-    movimientos = consultaSQL("SELECT * FROM movimientos;")
-    
+
+    if request.method == "GET":
+        movimientos = consultaSQL("SELECT * FROM movimientos;")
+    else:
+        if filtrar.reset.data == True:
+            return redirect(url_for('index'))
+        if filtrar.submit.data == True:
+            if desde:
+                query = """
+                        SELECT * FROM movimientos WHERE fecha=?;
+                        """        
+                movimientos = consultaSQL(query, [desde])
+                flash("Se ha filtrado por por los valores definidos", "mensaje")
+
     movimientoConSaldo = calcularSaldo(movimientos)
 
     return render_template("movimientos.html", datos = movimientoConSaldo, filtrar = filtrar)
@@ -60,7 +73,7 @@ def index():
 
 #@app.route('/<desde>/<hasta>', defaults={"texto":None}, methods=['GET', 'POST'])
 #@app.route('/<desde>/<hasta>/<texto>', methods=['GET', 'POST'])
-@app.route('/filtrar/<int:desde>', methods=['GET', 'POST'])
+@app.route('/filtrar/<desde>', methods=['GET', 'POST'])
 def filtro(desde):
     filtrar = Filtrar()
     if filtrar.reset.data == True:
@@ -68,7 +81,7 @@ def filtro(desde):
     if filtrar.submit.data == True:
         if desde:
             query = """
-                    SELECT * FROM movimientos WHERE fecha=?
+                    SELECT * FROM movimientos WHERE fecha=?;
                     """
             movimientos = consultaSQL(query , [desde])
     """
