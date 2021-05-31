@@ -4,84 +4,44 @@ import sqlite3
 from flask import jsonify, render_template, request, redirect, url_for, flash
 from datetime import date
 from KAKEBO.forms import Filtrar, MovimientosForm
+from KAKEBO.data_access import *
 
-def consultaSQL(query, parametros=[]):
-    #Abrimos conexion
-    conexion = sqlite3.connect("movimientos.db")
-    cur = conexion.cursor()
+DBmanager = DBmanager()
 
-    #Ejecutamos consulta
-    cur.execute(query, parametros)
-
-    #Procesamos datos para devolver una lista de diccionarios.
-    claves = cur.description
-    filas = cur.fetchall()
-    l = []
-
-    for fila in filas:
-        d = {}
-        for tclave, valor in zip(claves, fila):
-            d[tclave[0]] = valor
-        l.append(d)
-
-    # Cierro servidor.
-    conexion.close()
-
-    #Devuelvo los datos.
-    return l
-
-def modificaSQL(query, parametros=[]):
-    conexion = sqlite3.connect("movimientos.db")
-    cur = conexion.cursor()
-    cur.execute(query, parametros)
-
-    conexion.commit()
-    conexion.close
-
-def calcularSaldo(movimientos):
-    saldo = 0
-    for d in movimientos:
-        if d['esGasto'] == 0:
-            saldo = saldo + float(d['cantidad'])
-        else:
-            saldo = saldo - float(d['cantidad'])
-        d['saldo'] = saldo
-    return movimientos
-
-@app.route('/')
-@app.route('/<desde>', methods=['GET', 'POST'])
-def index(desde = "None"):
+@app.route('/', methods=["GET","POST"])
+def index():
     filtrar = Filtrar()
+    parametros = []
+    query = "SELECT * FROM movimientos WHERE 1=1 "
 
-    if request.method == "GET":
-        movimientos = consultaSQL("SELECT * FROM movimientos;")
-    else:
+    if request.method == "POST":
         if filtrar.reset.data == True:
             return redirect(url_for('index'))
-        if filtrar.submit.data == True:
-            if desde:
-                query = """
-                        SELECT * FROM movimientos WHERE fecha=?;
-                        """        
-                movimientos = consultaSQL(query, [desde])
-                flash("Se ha filtrado por por los valores definidos", "mensaje")
 
+        if filtrar.submit.data == True:
+            query = "SELECT * FROM movimientos WHERE 1=1 "
+            mensaje = ""
+            if filtrar.validate():
+                if filtrar.desde.data != None:
+                    query += " AND fecha >=?"
+                    parametros.append(filtrar.desde.data)
+                    mensaje += "desde {} ".format(filtrar.desde.data)
+                if filtrar.hasta.data != None:
+                    query += " AND fecha <=?"
+                    parametros.append(filtrar.hasta.data)
+                    mensaje += "hasta {} .".format(filtrar.hasta.data)
+                if filtrar.texto.data != "":
+                    query += "AND concepto LIKE ?" 
+                    parametros.append("%{}%".format(filtrar.texto.data))
+                    mensaje += "con {} en el texto.".format(filtrar.texto.data)
+
+                flash("Se han filtrado los registros {}". format(mensaje), "mensaje")
+
+    query += " ORDER BY fecha"
+    movimientos = DBmanager.consultaSQL(query, parametros)
     movimientoConSaldo = calcularSaldo(movimientos)
 
     return render_template("movimientos.html", datos = movimientoConSaldo, filtrar = filtrar)
-
-"""
-elif not texto:
-    query = ""
-            SELECT * FROM movimientos WHERE fecha > ? AND fecha < ?
-            ""
-    movimientos = consultaSQL(query , [desde,hasta])
-else:
-    query = ""
-            SELECT * FROM movimientos WHERE fecha > ? AND fecha < ? AND concepto LIKE "%?%"
-            ""
-    movimientos = consultaSQL(query , [desde,hasta,texto])
-"""
 
 @app.route('/nuevo', methods=['GET', 'POST'])
 def nuevo():
@@ -97,7 +57,7 @@ def nuevo():
                     """
             #Las interrogaciones se utilizan en SQL como huecos que rellenar.
             try:
-                modificaSQL(query, [form.fecha.data,
+                DBmanager.modificaSQL(query, [form.fecha.data,
                                     form.concepto.data,
                                     form.categoria.data,
                                     form.esGasto.data,
@@ -117,14 +77,14 @@ def nuevo():
 def borrar(id):
     formulario = MovimientosForm()
     if request.method == "GET":
-        filas = consultaSQL("SELECT * FROM movimientos WHERE id= ?", [id])
+        filas = DBmanager.consultaSQL("SELECT * FROM movimientos WHERE id= ?", [id])
         if len(filas) == 0:
             flash("No se encuentra el movimiento.", "alert")
             return render_template('borrar.html', form = None)
     else:
         if formulario.submit.data:
             try:
-                modificaSQL("DELETE FROM movimientos WHERE id = ?;", [id])
+                DBmanager.modificaSQL("DELETE FROM movimientos WHERE id = ?;", [id])
             except sqlite3.error as e:
                 flash("Se ha producido un error de base de datos, vuelva a intentarlo", 'error')
                 return redirect(url_for('index'))
@@ -144,7 +104,7 @@ def borrar(id):
 def modificar(id):
     form = MovimientosForm()
     if request.method == "GET":
-        filas = consultaSQL("SELECT * FROM movimientos WHERE id= ?", [id])
+        filas = DBmanager.consultaSQL("SELECT * FROM movimientos WHERE id= ?", [id])
         if len(filas) == 0:
             flash("No se encuentra el movimiento.", "alert")
             return render_template('modificar.html', form = None)
@@ -157,7 +117,7 @@ def modificar(id):
                         UPDATE movimientos SET fecha=?, concepto=?, categoria=?,esGasto=?, cantidad=? WHERE id=? 
                         """
                 try:
-                    modificaSQL(query, [form.fecha.data,
+                    DBmanager.modificaSQL(query, [form.fecha.data,
                                         form.concepto.data,
                                         form.categoria.data,
                                         form.esGasto.data,

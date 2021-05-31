@@ -36,11 +36,12 @@
     </table>
     <div>
         <h3>Filtrar</h3>
-        <form action="/{{filtrar.desde.data}}" method="POST">
+        <form action="/" method="post">
+            {{ filtrar.hidden_tag() }}
             <div>
-                <fieldset>
+                <fieldset class="container">
                     {{ filtrar.desde.label(class="mylabel") }}
-                    {{ filtrar.desde() }}
+                    {{ filtrar.desde(type="date") }}
                     <!--Este for imprime los mensaje de error si no se rellena bien el formulario. -->
                     {% for error in filtrar.desde.errors %}
                         <p class="msg-err">
