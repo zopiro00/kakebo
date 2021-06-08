@@ -1,13 +1,5 @@
 import sqlite3
 
-def modificaSQL(query, parametros=[]):
-    conexion = sqlite3.connect("movimientos.db")
-    cur = conexion.cursor()
-    cur.execute(query, parametros)
-
-    conexion.commit()
-    conexion.close
-
 def calcularSaldo(movimientos):
     saldo = 0
     for d in movimientos:
@@ -17,8 +9,6 @@ def calcularSaldo(movimientos):
             saldo = saldo - float(d['cantidad'])
         d['saldo'] = saldo
     return movimientos
-
-
 
 class DBmanager():
     def __toDict__(self, cur):
